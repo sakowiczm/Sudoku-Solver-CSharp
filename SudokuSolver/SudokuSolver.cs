@@ -50,30 +50,24 @@ namespace SudokuSolver
 
     public class SudokuSolver
     {
-        public Cell[,] _sudoku = new Cell[8,8];
+        // lista znanych wartosci
+        public List<Cell> Data { get; private set; }
 
-        public List<Cell> _empty;
-        public List<Cell> _filled;
-
-        // lista pol pustych - algorytm dziala tak dlugo az ta lista jest pusta - jesli po kolejnej iteracji - lista pol pustych sie nie zmniejszyla, znaczy ze pozostale elementy 'trzeba' zgadywac
-        // lista pol wypelnionych -
-
-        public SudokuSolver(Cell[,] sudoku)
+        public SudokuSolver(List<Cell> data)
         {
-            _sudoku = sudoku;
-            _empty = GetEmptyCells(_sudoku);
+            Data = data;
         }
 
         public void SolveCurrent()
         {
-            var emptyCells = GetEmptyCells(_sudoku);
+            var emptyCells = GetEmptyCells(Data);
 
-            int initialEmptyCellCount = emptyCells.Count;
-            bool proceed = true;
-
-            while (proceed)
+            int cont1 = 0;
+            while (cont1 != emptyCells.Count || cont1 == 0)
             {
-                foreach (var block in Block) // todo: for each block
+                cont1 = emptyCells.Count;
+
+                foreach (Block block in Enum.GetValues(typeof(Block)))
                 {
                     var cellsInBlock = emptyCells.Where(c => c.Block == block).ToList();
 
@@ -81,11 +75,6 @@ namespace SudokuSolver
 
                     if(count == 0)
                         continue;
-
-                    if (count == 0)
-                    {
-                        // just fill this single value
-                    }
 
                     if (count > 0)
                     {
@@ -95,8 +84,8 @@ namespace SudokuSolver
                         }
                         else
                         {
-                            var knownValues = _filled.Where(c => c.Block == block).Select(c => c.Value);
-                            List<int> notKnownValues = null; // todo: create based on knowValues;
+                            var knownValues = Data.Where(c => c.Block == block).Select(c => c.Value.Value);
+                            List<int> notKnownValues = Enumerable.Range(1, 9).Except(knownValues).ToList();
 
                             // build list of possible values
                             foreach (var cell in cellsInBlock)
@@ -110,39 +99,44 @@ namespace SudokuSolver
                                 }
                             }
 
-                            // ponizszy foreach zamienic na while  i tak samo untill notKnowValues nie sa = 0 badz wartosc jest taka sama jak na poczatku
-
-                            // if we have only on occurence of possible values for a cell fill the value
-                            foreach (var value in notKnownValues)
+                            int cont2 = 0;
+                            while (cont2 != notKnownValues.Count || cont2 == 0)
                             {
-                                // reduce vertically
-                                if (cellsInBlock.Count(c => c.PossibleValues.Contains(value)) == 1)
+                                cont2 = notKnownValues.Count;
+                                var values = notKnownValues;
+
+                                foreach (var value in values)
                                 {
-                                    var cell = cellsInBlock.First(c => c.PossibleValues.Contains(value));
+                                    // reduce vertically
+                                    if (cellsInBlock.Count(c => c.PossibleValues.Contains(value)) == 1)
+                                    {
+                                        var cell = cellsInBlock.First(c => c.PossibleValues.Contains(value));
 
-                                    cell.Value = value;
-                                    cell.PossibleValues.Clear();
-                                    notKnownValues.Remove(value);
-                                    cellsInBlock.ForEach(c => c.PossibleValues.Remove(value));
+                                        cell.Value = value;
+                                        cell.PossibleValues.Clear();
+                                        notKnownValues.Remove(value);
+                                        cellsInBlock.ForEach(c => c.PossibleValues.Remove(value));
 
-                                    cellsInBlock.Remove(cell);
-                                    emptyCells.Remove(cell);
-                                    _filled.Add(cell);
-                                }
+                                        cellsInBlock.Remove(cell);
+                                        emptyCells.Remove(cell);
+                                        Data.Add(cell);
+                                    }
 
-                                var cells = cellsInBlock.Where(c => c.PossibleValues.Count() == 1);
+                                    // reduce horizontally
+                                    var cells = cellsInBlock.Where(c => c.PossibleValues.Count() == 1);
 
-                                foreach (Cell cell in cells)
-                                {
-                                    cell.Value = cell.PossibleValues[0];
-                                    cell.PossibleValues.Clear();
-                                    notKnownValues.Remove(value);
+                                    foreach (Cell cell in cells)
+                                    {
+                                        cell.Value = cell.PossibleValues[0];
+                                        cell.PossibleValues.Clear();
+                                        notKnownValues.Remove(value);
 
-                                    cellsInBlock.Remove(cell);
-                                    emptyCells.Remove(cell);
-                                    _filled.Add(cell);
+                                        cellsInBlock.Remove(cell);
+                                        emptyCells.Remove(cell);
+                                        Data.Add(cell);
 
-                                    cellsInBlock.ForEach(c => c.PossibleValues.Remove(cell.Value.Value));
+                                        cellsInBlock.ForEach(c => c.PossibleValues.Remove(cell.Value.Value));
+                                    }
                                 }
                             }
 
@@ -152,12 +146,6 @@ namespace SudokuSolver
                         }
                     }
                 }
-
-                // check if there is no more possibilities for this alghorithm
-                if (emptyCells.Count == initialEmptyCellCount || emptyCells.Count == 0)
-                    proceed = false;
-
-                initialEmptyCellCount = emptyCells.Count;
             }
 
             // check if sudoku is solved
@@ -167,42 +155,7 @@ namespace SudokuSolver
             // todo: here another more complex attempt
         }
 
-        public void Solve()
-        {
-            var emptyCells = GetEmptyCells(_sudoku);
-
-            foreach (var cell in emptyCells)
-            {
-                var missing = GetBlockMissingNumbers(_sudoku, cell);
-
-                // if missing.Count() == 1 then cell.Value = missing[0];
-
-                foreach (int n in missing)
-                {
-                    bool success = IsValid(cell, n);
-
-                    if (success)
-                    {
-                        _empty.Remove(cell);
-                        _sudoku[cell.X, cell.Y].Value = n; // todo: here add or update
-
-                        break;
-                    }
-                }
-            }
-        }
-
-        private List<Cell> GetEmptyCells(Cell[,] sudoku)
-        {
-            throw new NotImplementedException();
-        }
-
-        private List<int> GetBlockMissingNumbers(Cell[,] sudoku, Cell cell)
-        {
-            throw new NotImplementedException();
-        }
-
-        private bool IsValid(Cell cell, int n)
+        private List<Cell> GetEmptyCells(List<Cell> data)
         {
             throw new NotImplementedException();
         }
