@@ -22,11 +22,23 @@ namespace SudokuSolver
         B22
     }
 
+    public enum Orientation
+    {
+        Horizontal,
+        Vertical
+    }
+
     public class Cell
     {
         public Cell()
         {
             PossibleValues = new List<int>(9);
+        }
+
+        public Cell(int x, int y) : this()
+        {
+            X = x;
+            Y = y;
         }
 
         public int X { get; set; }
@@ -35,32 +47,28 @@ namespace SudokuSolver
         public int? Value { get; set; }
         public bool Initial { get; set; }
 
+        public Block Block { get; set; }
+
         public List<int> PossibleValues { get; set; }
-
-        public Block Block
-        {
-            get { return GetBlock(X, Y); }
-        }
-
-        private Block GetBlock(int x, int y)
-        {
-            return Block.B00; // todo:
-        }
     }
 
     public class SudokuSolver
     {
-        // lista znanych wartosci
-        public List<Cell> Data { get; private set; }
+        public List<Cell> Cells { get; private set; }
 
-        public SudokuSolver(List<Cell> data)
+        public SudokuSolver(int?[,] data)
         {
-            Data = data;
+            Cells = GetCells(data);
         }
 
-        public void SolveCurrent()
+        public bool Validate()
         {
-            var emptyCells = GetEmptyCells(Data);
+            throw new NotImplementedException();
+        }
+
+        public void Solve()
+        {
+            var emptyCells = Cells.Where(c => !c.Value.HasValue).ToList();
 
             int cont1 = 0;
             while (cont1 != emptyCells.Count || cont1 == 0)
@@ -81,10 +89,21 @@ namespace SudokuSolver
                         if (count == 1)
                         {
                             // just fill this single value
+                            var knownValues = Cells.Where(c => c.Block == block && c.Value.HasValue).Select(c => c.Value.Value);
+                            int value = Enumerable.Range(1, 9).Except(knownValues).First();
+
+                            var cell = cellsInBlock[0];
+                            cell.Value = value;
+                            cell.PossibleValues.Clear();
+                            cellsInBlock.ForEach(c => c.PossibleValues.Remove(value));
+
+                            cellsInBlock.Remove(cell);
+                            emptyCells.Remove(cell);
+                            //Cells.Add(cell);
                         }
                         else
                         {
-                            var knownValues = Data.Where(c => c.Block == block).Select(c => c.Value.Value);
+                            var knownValues = Cells.Where(c => c.Block == block && c.Value.HasValue).Select(c => c.Value.Value);
                             List<int> notKnownValues = Enumerable.Range(1, 9).Except(knownValues).ToList();
 
                             // build list of possible values
@@ -92,7 +111,7 @@ namespace SudokuSolver
                             {
                                 foreach (var value in notKnownValues)
                                 {
-                                    bool isPossible = IsPossible(cell, value);
+                                    bool isPossible = IsPossible(Cells, cell, value);
 
                                     if (isPossible)
                                         cell.PossibleValues.Add(value);
@@ -103,7 +122,7 @@ namespace SudokuSolver
                             while (cont2 != notKnownValues.Count || cont2 == 0)
                             {
                                 cont2 = notKnownValues.Count;
-                                var values = notKnownValues;
+                                var values = new List<int>(notKnownValues);
 
                                 foreach (var value in values)
                                 {
@@ -119,11 +138,11 @@ namespace SudokuSolver
 
                                         cellsInBlock.Remove(cell);
                                         emptyCells.Remove(cell);
-                                        Data.Add(cell);
+                                        //Cells.Add(cell); // todo: here update
                                     }
 
                                     // reduce horizontally
-                                    var cells = cellsInBlock.Where(c => c.PossibleValues.Count() == 1);
+                                    var cells = new List<Cell>(cellsInBlock.Where(c => c.PossibleValues.Count() == 1));
 
                                     foreach (Cell cell in cells)
                                     {
@@ -133,7 +152,7 @@ namespace SudokuSolver
 
                                         cellsInBlock.Remove(cell);
                                         emptyCells.Remove(cell);
-                                        Data.Add(cell);
+                                        //Cells.Add(cell);
 
                                         cellsInBlock.ForEach(c => c.PossibleValues.Remove(cell.Value.Value));
                                     }
@@ -153,18 +172,107 @@ namespace SudokuSolver
                 return;
 
             // todo: here another more complex attempt
+            Console.WriteLine("You dont want to be here.");
         }
 
-        private List<Cell> GetEmptyCells(List<Cell> data)
+        public static List<Cell> GetCells(int?[,] board)
         {
-            throw new NotImplementedException();
+            var cells = new List<Cell>();
+
+            for (int i = 0; i < 9; i++)
+                for (int j = 0; j < 9; j++)
+                {
+                    int? value = board[i, j];
+
+                    var cell = new Cell();
+                    cell.Initial = value.HasValue;
+                    cell.Value = value;
+                    cell.X = i;
+                    cell.Y = j;
+                    cell.Block = GetBlock(i, j);
+
+                    cells.Add(cell);
+                }
+
+            return cells;
         }
 
-        private bool IsPossible(Cell cell, int n)
+        public static Block GetBlock(int x, int y)
         {
-            throw new NotImplementedException();
+            if (x < 0 || x > 8 || y < 0 || y > 8)
+                throw new ArgumentOutOfRangeException();
+
+            if (x < 3 && y < 3)
+                return Block.B00;
+
+            if (x > 2 && x < 6 && y < 3)
+                return Block.B10;
+
+            if (x > 5 && y < 3)
+                return Block.B20;
+
+            if (x < 3 && y > 2 && y < 6)
+                return Block.B01;
+
+            if (x > 2 && x < 6 && y > 2 && y < 6)
+                return Block.B11;
+
+            if (x > 5 && y > 2 && y < 6)
+                return Block.B21;
+
+            if (x < 3 && y > 5)
+                return Block.B02;
+
+            if (x > 2 && x < 6 && y > 5)
+                return Block.B12;
+
+            //if (x > 5 && y > 5)
+            return Block.B22;
         }
 
+        public static List<int> GetValues(int?[,] board, int x, int y, Orientation orientation)
+        {
+            List<int> values = new List<int>();
 
+            for (int i = 0; i < 9; i++)
+            {
+                int? value = orientation == Orientation.Horizontal ? board[i, y] : board[x, i];
+
+                if (value.HasValue)
+                    values.Add(value.Value);
+            }
+
+            return values;
+        }
+
+        public static List<int> GetValues(List<Cell> cells, Cell cell, Orientation orientation)
+        {
+            var values =
+                    cells.Where(
+                        c => (orientation == Orientation.Horizontal ? c.Y == cell.Y : c.X == cell.X) && c.Value.HasValue)
+                        .Select(c => c.Value.Value).ToList();
+
+            return values;
+        }
+
+        public static bool IsPossible(List<Cell> cells, Cell cell, int value)
+        {
+            if(cell == null || cell.Value.HasValue)
+                throw new ArgumentException("cell");
+
+            // value exist in block
+            if (cells.Count(c => c.Block == cell.Block && c.Value.HasValue && c.Value.Value == value) > 0)
+                return false;
+
+            // horizontal check
+            if(GetValues(cells, cell, Orientation.Horizontal).Contains(value))
+                return false;
+
+            // vertical check
+            if (GetValues(cells, cell, Orientation.Vertical).Contains(value))
+                return false;
+
+            return true;
+        }
     }
 }
