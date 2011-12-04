@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Extentions.cs" />
     <Compile Include="SudokuSolverTests.cs" />
     <Compile Include="SudokuSolver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
