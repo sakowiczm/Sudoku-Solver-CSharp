@@ -54,24 +54,24 @@ namespace SudokuSolver
 
     public class SudokuSolver
     {
-        public List<Cell> Cells { get; private set; }
+        //public List<Cell> Cells { get; private set; }
 
-        public SudokuSolver(int?[,] data)
+        //public SudokuSolver(int?[,] data)
+        //{
+        //    Cells = GetCells(data);
+        //}
+
+        //public bool Validate()
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        private List<Cell> Solve(List<Cell> cells, int emptyCellsCount)
         {
-            Cells = GetCells(data);
-        }
+            var emptyCells = cells.Where(c => !c.Value.HasValue).ToList();
 
-        public bool Validate()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Solve()
-        {
-            var emptyCells = Cells.Where(c => !c.Value.HasValue).ToList();
-
-            int cont1 = 0;
-            while (cont1 != emptyCells.Count || cont1 == 0)
+            int cont1 = -1;
+            while (cont1 != emptyCells.Count || cont1 == -1)
             {
                 cont1 = emptyCells.Count;
 
@@ -89,7 +89,7 @@ namespace SudokuSolver
                         if (count == 1)
                         {
                             // just fill this single value
-                            var knownValues = Cells.Where(c => c.Block == block && c.Value.HasValue).Select(c => c.Value.Value);
+                            var knownValues = cells.Where(c => c.Block == block && c.Value.HasValue).Select(c => c.Value.Value);
                             int value = Enumerable.Range(1, 9).Except(knownValues).First();
 
                             var cell = cellsInBlock[0];
@@ -103,7 +103,8 @@ namespace SudokuSolver
                         }
                         else
                         {
-                            var knownValues = Cells.Where(c => c.Block == block && c.Value.HasValue).Select(c => c.Value.Value);
+                            // move to GetPossibleValues (?)
+                            var knownValues = cells.Where(c => c.Block == block && c.Value.HasValue).Select(c => c.Value.Value);
                             List<int> notKnownValues = Enumerable.Range(1, 9).Except(knownValues).ToList();
 
                             // build list of possible values
@@ -111,15 +112,16 @@ namespace SudokuSolver
                             {
                                 foreach (var value in notKnownValues)
                                 {
-                                    bool isPossible = IsPossible(Cells, cell, value);
+                                    bool isPossible = IsPossible(cells, cell, value);
 
                                     if (isPossible)
                                         cell.PossibleValues.Add(value);
                                 }
                             }
+                            //end of move to GetPossibleValues
 
-                            int cont2 = 0;
-                            while (cont2 != notKnownValues.Count || cont2 == 0)
+                            int cont2 = -1;
+                            while (cont2 != notKnownValues.Count || cont2 == -1)
                             {
                                 cont2 = notKnownValues.Count;
                                 var values = new List<int>(notKnownValues);
@@ -142,19 +144,21 @@ namespace SudokuSolver
                                     }
 
                                     // reduce horizontally
-                                    var cells = new List<Cell>(cellsInBlock.Where(c => c.PossibleValues.Count() == 1));
+                                    var ccc = new List<Cell>(cellsInBlock.Where(c => c.PossibleValues.Count() == 1));
 
-                                    foreach (Cell cell in cells)
+                                    foreach (Cell cell in ccc)
                                     {
-                                        cell.Value = cell.PossibleValues[0];
-                                        cell.PossibleValues.Clear();
-                                        notKnownValues.Remove(value);
+                                        if (cell.PossibleValues.Count > 0) //?
+                                        {
+                                            cell.Value = cell.PossibleValues[0];
+                                            cell.PossibleValues.Clear();
+                                            notKnownValues.Remove(value);
 
-                                        cellsInBlock.Remove(cell);
-                                        emptyCells.Remove(cell);
-                                        //Cells.Add(cell);
+                                            cellsInBlock.Remove(cell);
+                                            emptyCells.Remove(cell);
 
-                                        cellsInBlock.ForEach(c => c.PossibleValues.Remove(cell.Value.Value));
+                                            cellsInBlock.ForEach(c => c.PossibleValues.Remove(cell.Value.Value));
+                                        }
                                     }
                                 }
                             }
@@ -168,11 +172,52 @@ namespace SudokuSolver
             }
 
             // check if sudoku is solved
-            if (emptyCells.Count == 0) 
-                return;
+            if (emptyCells.Count == 0)
+                return cells;
 
-            // todo: here another more complex attempt
-            Console.WriteLine("You dont want to be here.");
+            // not solveable
+            if (emptyCells.Count == emptyCellsCount)
+                return null;
+
+            // todo: check if this is a solvable sudoku if not return null
+            // else get first empty cell calculate possible values for it and foreach value
+
+            var emptyCell = cells.First(c => !c.Value.HasValue);
+
+            // todo: check if I need to do this - most likely not
+            emptyCell.PossibleValues.Clear();
+
+            // move to GetPossibleValues (?)
+            var kv = cells.Where(c => c.Block == emptyCell.Block && c.Value.HasValue).Select(c => c.Value.Value);
+            var nkv = Enumerable.Range(1, 9).Except(kv).ToList();
+
+            //// build list of possible values
+            //foreach (var value in nkv)
+            //{
+            //    bool isPossible = IsPossible(cells, emptyCell, value);
+
+            //    if (isPossible)
+            //        emptyCell.PossibleValues.Add(value);
+            //}
+            ////end of move to GetPossibleValues
+
+            //foreach (var c in emptyCell.PossibleValues)
+            foreach (var c in nkv)
+            {
+                emptyCell.Value = c;
+
+                var result = Solve(new List<Cell>(cells), emptyCells.Count - 1);
+
+                if(result != null)
+                    return result;
+            }
+
+            return null;
+        }
+
+        public List<Cell> Solve(List<Cell> cells)
+        {
+            return Solve(cells, 0);
         }
 
         public static List<Cell> GetCells(int?[,] board)

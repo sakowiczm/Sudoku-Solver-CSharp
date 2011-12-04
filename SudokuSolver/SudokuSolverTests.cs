@@ -179,10 +179,24 @@ namespace SudokuSolver
         public void SolveTest()
         {
             var board = GetBoard();
-            var ss = new SudokuSolver(board);
-            ss.Solve();
+            var ss = new SudokuSolver();
 
-            Console.WriteLine("afdasfd");
+            var initialCells = SudokuSolver.GetCells(board);
+            var resultCells = ss.Solve(initialCells);
+
+            var abc = resultCells.Where(c => !c.Initial).ToList();
+
+            Assert.IsTrue(resultCells != null);
+            Assert.IsTrue(resultCells.Count == 81);
+            Assert.IsTrue(resultCells.Count(c => c.Value.HasValue) == 81);
+
+            Assert.IsTrue(resultCells.Count(c => c.X == 0 && c.Y == 0 && c.Value.Value == 1) == 1);
+            Assert.IsTrue(resultCells.Count(c => c.X == 1 && c.Y == 0 && c.Value.Value == 9) == 1);
+            Assert.IsTrue(resultCells.Count(c => c.X == 2 && c.Y == 0 && c.Value.Value == 3) == 1);
+
+            Assert.IsTrue(resultCells.Count(c => c.X == 1 && c.Y == 1 && c.Value.Value == 7) == 1);
+            Assert.IsTrue(resultCells.Count(c => c.X == 2 && c.Y == 1 && c.Value.Value == 8) == 1);
+            Assert.IsTrue(resultCells.Count(c => c.X == 2 && c.Y == 2 && c.Value.Value == 6) == 1);
         }
 
         
