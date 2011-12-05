@@ -78,16 +78,11 @@ namespace SudokuSolver
 
                 foreach (Block block in Enum.GetValues(typeof(Block)))
                 {
-                    bool contBlockCheck = true;
-                    while (contBlockCheck)
+                    int cc = 9;
+                    while (cells.Count(c => !c.Value.HasValue && c.Block == block) < cc)
                     {
                         var ecs = cells.Where(c => !c.Value.HasValue && c.Block == block);
-
-                        if (ecs.Count() == 0)
-                        {
-                            contBlockCheck = false;
-                            continue;
-                        }
+                        cc = ecs.Count();
 
                         CalculatePossibleValues(cells, ecs);
 
@@ -96,8 +91,6 @@ namespace SudokuSolver
                         CalculatePossibleValues(cells, ecs);
 
                         var vr = CheckVertically(ecs);
-
-                        contBlockCheck = hr || vr;
                     }
                 }
             }
