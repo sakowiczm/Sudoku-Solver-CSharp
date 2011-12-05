@@ -206,6 +206,20 @@ namespace SudokuSolver
         }
 
         [Test]
+        public void STest()
+        {
+            var board = GetBoard();
+            var ss = new SudokuSolver();
+
+            // 0,0,0,5,8,0,0,0,0,5,0,0,0,0,0,9,0,0,2,4,0,0,7,9,0,0,5,0,0,5,0,4,0,7,1,0,0,1,0,0,0,0,0,4,0,0,8,2,0,1,0,5,0,0,3,0,0,1,2,0,0,9,8,0,0,1,0,0,0,0,0,6,0,0,0,0,3,6,0,0,0
+            var initialCells = SudokuSolver.GetCells(board);
+
+            var resultCells = ss.S(initialCells);
+
+            Console.WriteLine(resultCells.Export());
+        }
+
+        [Test]
         public void SolveTest1()
         {
             var board = GetBoard();
