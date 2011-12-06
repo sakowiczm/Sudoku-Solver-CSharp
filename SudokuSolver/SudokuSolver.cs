@@ -28,7 +28,7 @@ namespace SudokuSolver
         Vertical
     }
 
-    public class Cell
+    public class Cell : ICloneable
     {
         public Cell()
         {
@@ -50,6 +50,23 @@ namespace SudokuSolver
         public Block Block { get; set; }
 
         public List<int> PossibleValues { get; set; }
+
+        #region ICloneable Members
+
+        public object Clone()
+        {
+            var cell = new Cell();
+            cell.X = this.X;
+            cell.Y = this.Y;
+            cell.Value = this.Value;
+            cell.Initial = this.Initial;
+            cell.Block = this.Block;
+            cell.PossibleValues = this.PossibleValues; // this can be shared
+
+            return cell;
+        }
+
+        #endregion
     }
 
     public class SudokuSolver
@@ -100,26 +117,7 @@ namespace SudokuSolver
             if (cells.Count(c => !c.Value.HasValue) == 0)
                 return cells;
 
-            // approach 1
-
-            //var empty = cells.First(c => !c.Value.HasValue);
-
-            //CalculatePossibleValues(cells, new List<Cell>() { empty } );
-
-            //if (empty.PossibleValues.Count == 0)
-            //    return cells;
-
-            //foreach (var v in empty.PossibleValues)
-            //{
-            //    empty.Value = v;
-            //    var result = Solve(cells);
-
-            //    if (result.Count(c => !c.Value.HasValue) == 0)
-            //        return cells;
-            //}
-
-            // approach 2
-
+            // to nie jest potrzebne wystarczy pierwszy element
             foreach (var cell in cells.Where(c => !c.Value.HasValue))
             {
                 CalculatePossibleValues(cells, new List<Cell>() { cell } );
@@ -127,13 +125,17 @@ namespace SudokuSolver
                 if (cell.PossibleValues.Count == 0)
                     continue;
 
+                var step = (List<Cell>)cells.Clone();
+
                 foreach (var v in cell.PossibleValues)
                 {
                     cell.Value = v;
                     var result = Solve(cells);
 
-                    if (result.Count(c => !c.Value.HasValue) == 0)
+                    if (result != null && result.Count(c => !c.Value.HasValue) == 0)
                         return cells;
+
+                    cells = step;
                 }
             }
 

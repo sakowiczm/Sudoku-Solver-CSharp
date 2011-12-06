@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -20,6 +21,15 @@ namespace SudokuSolver
              }
 
              return string.Join(",", values);
+         }
+
+         public static IList<T> Clone<T>(this IList<T> listToClone) where T : ICloneable
+         {
+             var list = new List<T>(listToClone.Count);
+
+             list.AddRange(listToClone.Select(i => i.Clone()).Cast<T>());
+
+             return list;
          }
     }
 }
