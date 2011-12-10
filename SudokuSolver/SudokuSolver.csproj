@@ -49,8 +49,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CollectionComparer.cs" />
+    <Compile Include="Block.cs" />
+    <Compile Include="Cell.cs" />
     <Compile Include="Extentions.cs" />
+    <Compile Include="Orientation.cs" />
     <Compile Include="SudokuSolverTests.cs" />
     <Compile Include="SudokuSolver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

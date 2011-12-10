@@ -1,93 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace SudokuSolver
 {
-    // todo: try to use TPL
-    // todo: try to fit here strategy pattern
-    // todo: heavy on interfaces and unit tests
-
-    public enum Block
-    {
-        B00,
-        B10,
-        B20,
-        B01,
-        B11,
-        B21,
-        B02,
-        B12,
-        B22
-    }
-
-    public enum Orientation
-    {
-        Horizontal,
-        Vertical
-    }
-
-    public class Cell : ICloneable, IComparable<Cell>
-    {
-        public Cell()
-        {
-            PossibleValues = new List<int>(9);
-        }
-
-        public Cell(int x, int y) : this()
-        {
-            X = x;
-            Y = y;
-        }
-
-        public int X { get; set; }
-        public int Y { get; set; }
-
-        public int? Value { get; set; }
-        public bool Initial { get; set; }
-
-        public Block Block { get; set; }
-
-        public List<int> PossibleValues { get; set; }
-
-        #region ICloneable Members
-
-        public object Clone()
-        {
-            var cell = new Cell();
-            cell.X = this.X;
-            cell.Y = this.Y;
-            cell.Value = this.Value;
-            cell.Initial = this.Initial;
-            cell.Block = this.Block;
-            cell.PossibleValues = this.PossibleValues; // this can be shared
-
-            return cell;
-        }
-
-        #endregion
-
-        public int CompareTo(Cell other)
-        {
-            return (this.X == other.X && this.Y == other.Y && this.Value == other.Value && this.Block == other.Block) ? 0 : -1;
-        }
-    }
-
     public class SudokuSolver
     {
-        //public List<Cell> Cells { get; private set; }
-
-        //public SudokuSolver(int?[,] data)
-        //{
-        //    Cells = GetCells(data);
-        //}
-
-        //public bool Validate()
-        //{
-        //    throw new NotImplementedException();
-        //}
-
         public List<Cell> Solve(List<Cell> cells)
         {
             int emptyCellCount = 81;
@@ -125,8 +43,6 @@ namespace SudokuSolver
 
                 if (cell.PossibleValues.Count == 0)
                     continue;
-
-                var step = (List<Cell>)cells.Clone();
 
                 foreach (var v in cell.PossibleValues)
                 {
@@ -189,28 +105,6 @@ namespace SudokuSolver
             }
         }
 
-        public static List<Cell> GetCells(int?[,] board)
-        {
-            var cells = new List<Cell>();
-
-            for (int i = 0; i < 9; i++)
-                for (int j = 0; j < 9; j++)
-                {
-                    int? value = board[i, j];
-
-                    var cell = new Cell();
-                    cell.Initial = value.HasValue;
-                    cell.Value = value;
-                    cell.X = i;
-                    cell.Y = j;
-                    cell.Block = GetBlock(i, j);
-
-                    cells.Add(cell);
-                }
-
-            return cells;
-        }
-
         public static Block GetBlock(int x, int y)
         {
             if (x < 0 || x > 8 || y < 0 || y > 8)
@@ -240,23 +134,7 @@ namespace SudokuSolver
             if (x > 2 && x < 6 && y > 5)
                 return Block.B12;
 
-            //if (x > 5 && y > 5)
             return Block.B22;
-        }
-
-        public static List<int> GetValues(int?[,] board, int x, int y, Orientation orientation)
-        {
-            List<int> values = new List<int>();
-
-            for (int i = 0; i < 9; i++)
-            {
-                int? value = orientation == Orientation.Horizontal ? board[i, y] : board[x, i];
-
-                if (value.HasValue)
-                    values.Add(value.Value);
-            }
-
-            return values;
         }
 
         public static List<int> GetValues(IEnumerable<Cell> cells, Cell cell, Orientation orientation)
