@@ -69,6 +69,20 @@ namespace SudokuSolver
         }
 
         [Test]
+        public void GetValuesTest()
+        {
+            var cells = "000580000500000900240079005005040710010000040082010500300120098001000006000036000".StringToCells();
+
+            List<int> a = SudokuSolver.GetValues(cells, new Cell(0, 0), Orientation.Vertical);
+            Assert.IsTrue(a.Where(i => (new List<int>() { 5, 2, 3 }).Contains(i)).Count() == 3);
+
+            a = SudokuSolver.GetValues(cells, new Cell(6, 1), Orientation.Horizontal);
+            Assert.IsTrue(a.Where(i => (new List<int>() { 5, 9 }).Contains(i)).Count() == 2);
+
+            a = SudokuSolver.GetValues(cells, new Cell(4, 3), Orientation.Vertical);
+            Assert.IsTrue(a.Where(i => (new List<int>() { 8, 7, 4, 1, 2, 3 }).Contains(i)).Count() == 6);            
+        }
+        [Test]
         public void GetValuesFromArrayTest()
         {
             var board = GetBoard();
@@ -104,6 +118,7 @@ namespace SudokuSolver
         {
             var board = GetBoard();
             var cells = SudokuSolver.GetCells(board);
+            //var cells = "000580000500000900240079005005040710010000040082010500300120098001000006000036000".StringToCells();
 
             bool isPossible = SudokuSolver.IsPossible(cells, new Cell(0, 0), 1);
             Assert.IsTrue(isPossible);
@@ -169,6 +184,7 @@ namespace SudokuSolver
         [Test]
         public void GetCellsTest()
         {
+            //var cells = "000580000500000900240079005005040710010000040082010500300120098001000006000036000".StringToCells();
             var board = GetBoard();
 
             var cells = SudokuSolver.GetCells(board);
@@ -178,6 +194,33 @@ namespace SudokuSolver
             Assert.IsTrue(cells.Count(c => !c.Value.HasValue) == 81 - 28);
         }
 
+        [Test]
+        public void ImportExportTest()
+        {
+            string input = "000580000500060900240079005005040710010000040082010500300120498001000006000036000";
+                            
+            string output = input.StringToCells().CellsToString();
+
+            Assert.IsTrue(input == output);
+
+            input = "193584627578261934246379185635948712719652843482713569367125498821497356954836271";
+            output = input.StringToCells().CellsToString();
+
+            Assert.IsTrue(input == output);
+        }
+
+        [Test]
+        public void AAA()
+        {
+            var board = GetBoard();
+
+            var initialCells1 = SudokuSolver.GetCells(board);
+            var initialCells2 = "000580000500000900240079005005040710010000040082010500300120098001000006000036000".StringToCells();
+
+            Assert.IsTrue(initialCells1.CellsToString() == initialCells2.CellsToString());
+            //Assert.IsTrue(new CollectionComparer<Cell>().Equals(initialCells1, initialCells2));
+        }
+		
         [Test]
         public void SolveTest()
         {
@@ -212,11 +255,12 @@ namespace SudokuSolver
             var ss = new SudokuSolver();
 
             // 0,0,0,5,8,0,0,0,0,5,0,0,0,0,0,9,0,0,2,4,0,0,7,9,0,0,5,0,0,5,0,4,0,7,1,0,0,1,0,0,0,0,0,4,0,0,8,2,0,1,0,5,0,0,3,0,0,1,2,0,0,9,8,0,0,1,0,0,0,0,0,6,0,0,0,0,3,6,0,0,0
-            var initialCells = SudokuSolver.GetCells(board);
+            //var initialCells = SudokuSolver.GetCells(board);
+            var initialCells = "000580000500000900240079005005040710010000040082010500300120098001000006000036000".StringToCells();
 
             var resultCells = ss.Solve(initialCells);
 
-            Console.WriteLine(resultCells.Export());
+            Console.WriteLine(resultCells.ToString());
         }
 
         [Test]
@@ -244,7 +288,27 @@ namespace SudokuSolver
             //Assert.IsTrue(resultCells.Count(c => c.X == 1 && c.Y == 1 && c.Value.Value == 7) == 1);
             //Assert.IsTrue(resultCells.Count(c => c.X == 2 && c.Y == 1 && c.Value.Value == 8) == 1);
             //Assert.IsTrue(resultCells.Count(c => c.X == 2 && c.Y == 2 && c.Value.Value == 6) == 1);
-        }        
+        }   
+		     
+        [Test]
+        public void SolveTest2()
+        {
+            var solver = new SudokuSolver();
+
+            // input, expected output
+            var games = new List<Tuple<string, string>>();
+            games.Add(Tuple.Create<string, string>("000580000500000900240079005005040710010000040082010500300120098001000006000036000", 
+                                                    "193584627578261934246379185635948712719652843482713569367125498821497356954836271"));
+
+            foreach (var game in games)
+            {
+                var cells = solver.Solve(game.Item1.StringToCells());
+                string output = cells.CellsToString();
+                Console.WriteLine(game.Item1 + " --> " + output);
+                Assert.IsTrue(output == game.Item2);
+            }
+
+        }
 
 
     }

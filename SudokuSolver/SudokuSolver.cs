@@ -28,7 +28,7 @@ namespace SudokuSolver
         Vertical
     }
 
-    public class Cell : ICloneable
+    public class Cell : ICloneable, IComparable<Cell>
     {
         public Cell()
         {
@@ -67,6 +67,11 @@ namespace SudokuSolver
         }
 
         #endregion
+
+        public int CompareTo(Cell other)
+        {
+            return (this.X == other.X && this.Y == other.Y && this.Value == other.Value && this.Block == other.Block) ? 0 : -1;
+        }
     }
 
     public class SudokuSolver
@@ -82,8 +87,6 @@ namespace SudokuSolver
         //{
         //    throw new NotImplementedException();
         //}
-
-        List<string> _operationLog = new List<string>();
 
         public List<Cell> Solve(List<Cell> cells)
         {
@@ -112,8 +115,6 @@ namespace SudokuSolver
                 }
             }
 
-            // todo: here backtrack algorithm
-
             if (cells.Count(c => !c.Value.HasValue) == 0)
                 return cells;
 
@@ -130,12 +131,10 @@ namespace SudokuSolver
                 foreach (var v in cell.PossibleValues)
                 {
                     cell.Value = v;
-                    var result = Solve(cells);
+                    var result = Solve((List<Cell>)cells.Clone());
 
                     if (result != null && result.Count(c => !c.Value.HasValue) == 0)
-                        return cells;
-
-                    cells = step;
+                        return result;
                 }
             }
 

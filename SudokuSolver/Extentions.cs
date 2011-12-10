@@ -7,7 +7,7 @@ namespace SudokuSolver
 {
     public static class Extentions
     {
-         public static string Export(this List<Cell> cells)
+         public static string CellsToString(this List<Cell> cells)
          {
              var values = new List<int>(81);
 
@@ -20,7 +20,32 @@ namespace SudokuSolver
                  }
              }
 
-             return string.Join(",", values);
+            return string.Join("", values);
+        }
+
+         public static List<Cell> StringToCells(this string values)
+         {
+             var cells = new List<Cell>(81);
+
+             for (int i = 0; i < 9; i++)
+             {
+                 for (int j = 0; j < 9; j++)
+                 {
+                     var cell = new Cell();
+                     cell.X = i;
+                     cell.Y = j;
+                     cell.Initial = true;
+
+                     int value = Convert.ToInt32(values[(9 * j) + i].ToString());
+
+                     cell.Value = value == 0 ? (int?)null : value;
+                     cell.Block = SudokuSolver.GetBlock(cell.X, cell.Y);
+
+                     cells.Add(cell);
+                 }
+             }
+
+             return cells;
          }
 
          public static IList<T> Clone<T>(this IList<T> listToClone) where T : ICloneable
