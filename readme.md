@@ -1,11 +1,11 @@
 Sudoku Solver in C#
--------------------
+===================
 
 Another breakable toy, my variation of Sudoku solver. I've created it without previously googling the topic , and I was quite surprised when latter I realized that most solutions out there use just dumb trial and error. I was also glad that I can re-invent backtracking algorithm ;) 
  
 Ok. let's start, from having a Sudoku that we want to solve:
 
-![Example Sudoku game](http://github.com/sakowiczm/Sudoku-Solver-CSharp/blob/master/sudoku.png "Example Sudoku game")
+![Example Sudoku game](https://github.com/sakowiczm/Sudoku-Solver-CSharp/blob/master/sudoku.png "Example Sudoku game")
 
 After a little consideration I decided to solve it by elimination of possible values. Let’s consider first block (by block I mean inner 3x3 cells squares), possible values for empty cells:
 
