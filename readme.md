@@ -5,7 +5,7 @@ Another breakable toy, my variation of Sudoku solver. I've created it without pr
  
 Ok. let's start, from having a Sudoku that we want to solve:
 
-![Example Sudoku game](sudoku.png "Example Sudoku game")
+![Example Sudoku game](\sudoku.png "Example Sudoku game")
 
 After a little consideration I decided to solve it by elimination of possible values. Let’s consider first block (by block I mean inner 3x3 cells squares), possible values for empty cells:
 
