@@ -6,7 +6,7 @@ Another breakable toy, my variation of Sudoku solver. I've created it without pr
 Ok. let's start, from having a Sudoku that we want to solve:
 
 <center>
-<img style="background-image: none; padding-left: 0; padding-right: 0; display: block; float: none; padding-top: 0; border: 0; margin: 0 auto;" title="Example Sudoku" src="http://sakowicz.files.wordpress.com/2012/01/sudoku_thumb.png" alt="Example Sudoku" width="453" height="437" border="0" />
+<img title="Example Sudoku" src="http://sakowicz.files.wordpress.com/2012/01/sudoku_thumb.png" alt="Example Sudoku" width="453" height="437" border="0" />
 </center>
 
 After a little consideration I decided to solve it by elimination of possible values. Let’s consider first block (by block I mean inner 3x3 cells squares), possible values for empty cells:
