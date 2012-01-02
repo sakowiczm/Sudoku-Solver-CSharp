@@ -9,7 +9,7 @@ Ok. let's start, from having a Sudoku that we want to solve:
 <img title="Example Sudoku" src="http://sakowicz.files.wordpress.com/2012/01/sudoku_thumb.png" alt="Example Sudoku" width="453" height="437" border="0" />
 </center>
 
-After a little consideration I decided to solve it by elimination of possible values. Let’s consider first block (by block I mean inner 3x3 cells squares), possible values for empty cells:
+After a little consideration I decided to solve it by elimination of possible values. Let's consider first block (by block I mean inner 3x3 cells squares), possible values for empty cells:
 
 <table border=1>
   <tbody>
